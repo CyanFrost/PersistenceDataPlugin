@@ -3,8 +3,6 @@ package com.deadmen.bukkit.persistence.main;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.jar.JarEntry;
@@ -18,10 +16,10 @@ public class UnsecureClassloader {
 	private static Method defineClazz = null;
 	public static Method getClassDefiner(){return defineClazz;}
 	protected static Class<?> defineClass(ClassLoader cl, String name, byte[] bytes, int offset, int length) throws Exception {
-		if(defineClazz == null) throw new NullPointerException("Method: \"defineClass\" Is Unset!");
-		if(cl == null) throw new NullPointerException("ClassLoader Can Not Be Null!");
-		if(name == null) throw new NullPointerException("ClassName Can Not Be Null!");
-		if(name.length()<= 0) throw new NullPointerException("ClassName Can Not Be Null!");
+		if(defineClazz == null) throw new NullPointerException("Method: \"defineClass\" Is Unset!"); //No Null
+		if(cl == null) throw new NullPointerException("ClassLoader Can Not Be Null!"); //No Null
+		if(name == null) throw new NullPointerException("ClassName Can Not Be Null!"); //No Null
+		if(name.length()<= 0) throw new NullPointerException("ClassName Can Not Be Null!"); //No Null
 		return (Class<?>) defineClazz.invoke(cl, name, bytes, offset, length);
 	}
 
