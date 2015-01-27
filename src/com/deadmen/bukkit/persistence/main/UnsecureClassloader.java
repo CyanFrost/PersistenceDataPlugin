@@ -15,6 +15,8 @@ import java.util.jar.JarFile;
 
 import org.bukkit.Bukkit;
 
+/*@Author(Devs.BlueFrost,Devs.Awellstein);*/
+
 public class UnsecureClassloader {
 
 	private static Method defineClazz = null;
