@@ -58,7 +58,7 @@ public class UnsecureClassloader {
 		}
 	}
 
-	public static byte[] finder(File f, String name) throws Exception {
+	@Deprecated public static byte[] finder(File f, String name) throws Exception {
 		JarFile jar = new JarFile(f);  
 		JarEntry entry = jar.getJarEntry(name);  
 		InputStream is = jar.getInputStream(entry);
@@ -73,4 +73,7 @@ public class UnsecureClassloader {
 		jar.close();
 		return classByte;
 	}
+	
+	
+	
 }
