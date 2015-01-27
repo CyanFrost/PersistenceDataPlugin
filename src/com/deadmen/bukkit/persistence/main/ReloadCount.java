@@ -17,5 +17,4 @@ public class ReloadCount {
 			return reloadCount;
 		}
 	}
-	
 }
