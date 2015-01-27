@@ -38,75 +38,69 @@ public class UnsecureClassloader {
 		}
 	}
 
-
-	public static void LoadPackage(File jar, String Package) throws Exception{
-		JarInputStream jis = new JarInputStream(new FileInputStream(jar));
-		JarEntry je;
-		while((je = jis.getNextJarEntry())!= null){
-			if(je.getName().replace(".", "/").startsWith(Package)){
-				try {
-					loadClass(je.getName().replace("/", ".").replace(".class", ""), finder(jar, je.getName()));
-				}catch(Exception e) {e.printStackTrace();}
-			}
-		}
-		jis.close();
-
-	}
-	public static void LoadPackages(File jar, String ... args) throws Exception{
-		for(String s: args){
-			LoadPackage(jar, s);
-		}
-	}
-
-	@Deprecated public static byte[] finder(File f, String name) throws Exception {
-		JarFile jar = new JarFile(f);  
-		JarEntry entry = jar.getJarEntry(name);  
-		InputStream is = jar.getInputStream(entry);
-		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();  
-		int nextValue = is.read();  
-		while (-1 != nextValue) {  
-			byteStream.write(nextValue);  
-			nextValue = is.read();  
-		}  
-
-		byte[] classByte = byteStream.toByteArray();  
-		jar.close();
-		return classByte;
+	public static List<Class<?>> loadPackages(File jar, String... packages) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
+		return loadPackages(jar,  new ArrayList<String>(Arrays.asList(packages)));
 	}
 	
-	@Deprecated public static void loadClasses(File jar, String ... clazzes) throws Exception {
-		for(String clazz: clazzes){
-			loadClass(jar, clazz);
+	public static List<Class<?>> loadPackages(File jar, List<String> packages) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
+		List<Class<?>> c = new ArrayList<Class<?>>();
+		for(String s: packages){
+			c.addAll(loadPackage(jar, s));
 		}
+		return c;
 	}
-
-	public static void loadClasses(File jar, List<String> clazzes) throws Exception {
+	
+	public static List<Class<?>> loadPackage(File jar, String Package) throws IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException  {
+		List<Class<?>> c = new ArrayList<Class<?>>();
 		JarFile jarFile = new JarFile(jar);
 		final Enumeration<JarEntry> entries = jarFile.entries();
 		while (entries.hasMoreElements()) {
 			final JarEntry entry = entries.nextElement();
 			if ( entry.getName().endsWith(".class")) {
-				if(clazzes.contains(entry.getName().replace("/", ".").replace(".class", ""))){
-					loadClass(entry.getName().replace("/",".").replace(".class", ""), processBetter(jarFile.getInputStream(jarFile.getJarEntry(entry.getName()))));		
+				if(entry.getName().replace("/", ".").replace(".class", "").startsWith(Package)){
+					c.add(loadClass(entry.getName().replace("/",".").replace(".class", ""), processBetter(jarFile.getInputStream(jarFile.getJarEntry(entry.getName())))));	
+				}
+			}
+		}
+		jarFile.close();
+		return c;
+	}
+
+	public static List<Class<?>> loadClasses(File jar, String... clazzes) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
+		return loadClasses(jar,  new ArrayList<String>(Arrays.asList(clazzes)));
+	}
+	
+	public static List<Class<?>> loadClasses(File jar, List<String> clazzes) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException  {
+		List<Class<?>> c = new ArrayList<Class<?>>();
+		JarFile jarFile = new JarFile(jar);
+		final Enumeration<JarEntry> entries = jarFile.entries();
+		while (entries.hasMoreElements()) {
+			final JarEntry entry = entries.nextElement();
+			if (entry.getName().endsWith(".class")) {
+				if(clazzes.contains(entry.getName().replace("/", ".").replace(".class", ""))) {
+					c.add(loadClass(entry.getName().replace("/",".").replace(".class", ""), processBetter(jarFile.getInputStream(jarFile.getJarEntry(entry.getName())))));		
 					clazzes.remove(entry.getName().replace("/", ".").replace(".class", ""));
 				}
 			}
 		}
 		jarFile.close();
+		return c;
 	}
 
-	public static void loadClass(File jar, String clazz) throws Exception {
+	public static Class<?> loadClass(File jar, String clazz) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
+		Class<?> c = null;
 		JarFile jarFile = new JarFile(jar);
 		final Enumeration<JarEntry> entries = jarFile.entries();
 		while (entries.hasMoreElements()) {
 			final JarEntry entry = entries.nextElement();
 			if ( entry.getName().endsWith(".class")) {
-				if(entry.getName().replace("/", ".").replace(".class", "").equals(clazz)){
-					loadClass(entry.getName().replace("/",".").replace(".class", ""), processBetter(jarFile.getInputStream(jarFile.getJarEntry(entry.getName()))));		
+				if(entry.getName().replace("/", ".").replace(".class", "").equals(clazz)) {
+					c = loadClass(entry.getName().replace("/",".").replace(".class", ""), processBetter(jarFile.getInputStream(jarFile.getJarEntry(entry.getName()))));		
 				}
 			}
 		}
 		jarFile.close();
+		return c;
 	}
 
 	private static byte[] processBetter(InputStream is) throws IOException {
