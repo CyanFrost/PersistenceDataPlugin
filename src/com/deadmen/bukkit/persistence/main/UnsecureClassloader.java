@@ -74,6 +74,48 @@ public class UnsecureClassloader {
 		return classByte;
 	}
 	
-	
+	@Deprecated public static void loadClasses(File jar, String ... clazzes) throws Exception {
+		for(String clazz: clazzes){
+			loadClass(jar, clazz);
+		}
+	}
+
+	public static void loadClasses(File jar, List<String> clazzes) throws Exception {
+		JarFile jarFile = new JarFile(jar);
+		final Enumeration<JarEntry> entries = jarFile.entries();
+		while (entries.hasMoreElements()) {
+			final JarEntry entry = entries.nextElement();
+			if ( entry.getName().endsWith(".class")) {
+				if(clazzes.contains(entry.getName().replace("/", ".").replace(".class", ""))){
+					loadClass(entry.getName().replace("/",".").replace(".class", ""), processBetter(jarFile.getInputStream(jarFile.getJarEntry(entry.getName()))));		
+					clazzes.remove(entry.getName().replace("/", ".").replace(".class", ""));
+				}
+			}
+		}
+		jarFile.close();
+	}
+
+	public static void loadClass(File jar, String clazz) throws Exception {
+		JarFile jarFile = new JarFile(jar);
+		final Enumeration<JarEntry> entries = jarFile.entries();
+		while (entries.hasMoreElements()) {
+			final JarEntry entry = entries.nextElement();
+			if ( entry.getName().endsWith(".class")) {
+				if(entry.getName().replace("/", ".").replace(".class", "").equals(clazz)){
+					loadClass(entry.getName().replace("/",".").replace(".class", ""), processBetter(jarFile.getInputStream(jarFile.getJarEntry(entry.getName()))));		
+				}
+			}
+		}
+		jarFile.close();
+	}
+
+	private static byte[] processBetter(InputStream is) throws IOException {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		int nRead;
+		byte[] data = new byte[16384];
+		while((nRead = is.read(data, 0, data.length)) != -1) {buffer.write(data, 0, nRead);}
+		buffer.flush();
+		return buffer.toByteArray();
+	}
 	
 }
