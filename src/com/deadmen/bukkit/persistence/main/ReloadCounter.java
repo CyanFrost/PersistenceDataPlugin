@@ -7,25 +7,16 @@ public class ReloadCounter extends Thread {
 		this.setName(name);
 	}
 	
-	private int reloadCount;
-	public void setReloadCount(int i){
-		synchronized(this){
-			reloadCount = i;
-		}
-	}
-	public void addReload(){
-		synchronized(this){
-			reloadCount = reloadCount + 1;
-		}
-	}
-	public int getReloadCount(){
-		synchronized(this){
-			return reloadCount;
-		}
+	public ReloadCounter(String name, ReloadCount rc){
+		this.setName(name);
+		this.rc = rc;
 	}
 	
+	private ReloadCount rc;
+	public ReloadCount getReloadCount(){return rc;}
+	
 	public void run() {
-		while(true){
+		while(!this.isInterrupted()){
 			try{
 				Thread.sleep(1000000);
 			}catch(Exception e){break;}
@@ -42,6 +33,8 @@ public class ReloadCounter extends Thread {
 				if(t.getName().equals(name)) return (ReloadCounter)t;
 			}
 		}catch(Exception e){e.printStackTrace();}
-		throw new NullPointerException("No Persistence Object named " + name + " exist.");
+		return null;
+		//throw new NullPointerException("No Persistence Object named " + name + " exist.");
 	}
+	
 }

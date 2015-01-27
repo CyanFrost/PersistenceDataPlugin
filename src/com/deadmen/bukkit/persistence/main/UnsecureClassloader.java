@@ -2,19 +2,25 @@ package com.deadmen.bukkit.persistence.main;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
 
 import org.bukkit.Bukkit;
 
 public class UnsecureClassloader {
 
 	private static Method defineClazz = null;
+
 	public static Method getClassDefiner(){return defineClazz;}
+
 	protected static Class<?> defineClass(ClassLoader cl, String name, byte[] bytes, int offset, int length) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		if(defineClazz == null) throw new NullPointerException("Method: \"defineClass\" Is Unset!"); //No Null
 		if(cl == null) throw new NullPointerException("ClassLoader Can Not Be Null!"); //No Null
@@ -31,7 +37,7 @@ public class UnsecureClassloader {
 	private static void setMethod(){
 		for(Method m2: Bukkit.class.getClassLoader().getClass().getSuperclass().getSuperclass().getSuperclass().getDeclaredMethods()){
 			if(m2.toString().contains(".defineClass(java.lang.String,byte[],int,int)")){
-				System.out.println("Found the method!\n"+m2);
+				//	System.out.println("Found the method!\n"+m2);
 				m2.setAccessible(true);
 				defineClazz = m2;
 			}
@@ -41,7 +47,7 @@ public class UnsecureClassloader {
 	public static List<Class<?>> loadPackages(File jar, String... packages) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
 		return loadPackages(jar,  new ArrayList<String>(Arrays.asList(packages)));
 	}
-	
+
 	public static List<Class<?>> loadPackages(File jar, List<String> packages) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
 		List<Class<?>> c = new ArrayList<Class<?>>();
 		for(String s: packages){
@@ -49,7 +55,7 @@ public class UnsecureClassloader {
 		}
 		return c;
 	}
-	
+
 	public static List<Class<?>> loadPackage(File jar, String Package) throws IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException  {
 		List<Class<?>> c = new ArrayList<Class<?>>();
 		JarFile jarFile = new JarFile(jar);
@@ -69,7 +75,20 @@ public class UnsecureClassloader {
 	public static List<Class<?>> loadClasses(File jar, String... clazzes) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
 		return loadClasses(jar,  new ArrayList<String>(Arrays.asList(clazzes)));
 	}
-	
+
+	public static boolean classesDefined(String ... clazzes){
+		try{
+			for(String s: clazzes){
+				Class.forName(s, false, Bukkit.class.getClassLoader());
+			}
+		}catch(Exception e){
+			if(e instanceof ClassNotFoundException){
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public static List<Class<?>> loadClasses(File jar, List<String> clazzes) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException  {
 		List<Class<?>> c = new ArrayList<Class<?>>();
 		JarFile jarFile = new JarFile(jar);
@@ -85,6 +104,19 @@ public class UnsecureClassloader {
 		}
 		jarFile.close();
 		return c;
+	}
+
+	public static boolean classesDefined(List<String> clazzes){
+		try{
+			for(String s: clazzes){
+				Class.forName(s, false, Bukkit.class.getClassLoader());
+			}
+		}catch(Exception e){
+			if(e instanceof ClassNotFoundException){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static Class<?> loadClass(File jar, String clazz) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
@@ -103,6 +135,17 @@ public class UnsecureClassloader {
 		return c;
 	}
 
+	public static boolean classDefined(String clazz){
+		try{
+			Class.forName("com.deadmen.bukkit.persistence.main.ReloadCounter", false, Bukkit.class.getClassLoader());
+		}catch(Exception e){
+			if(e instanceof ClassNotFoundException){
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private static byte[] processBetter(InputStream is) throws IOException {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		int nRead;
@@ -111,5 +154,5 @@ public class UnsecureClassloader {
 		buffer.flush();
 		return buffer.toByteArray();
 	}
-	
+
 }
