@@ -23,7 +23,7 @@ public class UnsecureClassloader {
 
 	public static Method getClassDefiner(){return defineClazz;}
 
-	protected static Class<?> defineClass(ClassLoader cl, String name, byte[] bytes, int offset, int length) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	private static Class<?> defineClass(ClassLoader cl, String name, byte[] bytes, int offset, int length) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		if(defineClazz == null) throw new NullPointerException("Method: \"defineClass\" Is Unset!"); //No Null
 		if(cl == null) throw new NullPointerException("ClassLoader Can Not Be Null!"); //No Null
 		if(name == null) throw new NullPointerException("ClassName Can Not Be Null!"); //No Null
