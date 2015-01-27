@@ -15,7 +15,7 @@ public class UnsecureClassloader {
 
 	private static Method defineClazz = null;
 	public static Method getClassDefiner(){return defineClazz;}
-	protected static Class<?> defineClass(ClassLoader cl, String name, byte[] bytes, int offset, int length) throws Exception {
+	protected static Class<?> defineClass(ClassLoader cl, String name, byte[] bytes, int offset, int length) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		if(defineClazz == null) throw new NullPointerException("Method: \"defineClass\" Is Unset!"); //No Null
 		if(cl == null) throw new NullPointerException("ClassLoader Can Not Be Null!"); //No Null
 		if(name == null) throw new NullPointerException("ClassName Can Not Be Null!"); //No Null
@@ -23,8 +23,8 @@ public class UnsecureClassloader {
 		return (Class<?>) defineClazz.invoke(cl, name, bytes, offset, length);
 	}
 
-	public static Class<?> loadClass(String name, byte[] bytes) throws Exception {
-		if(defineClazz == null){setMethod();}
+	public static Class<?> loadClass(String name, byte[] bytes) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException  {
+		if(defineClazz == null) {setMethod();}
 		return defineClass(Bukkit.class.getClassLoader(),name, bytes,0,bytes.length);
 	}
 
